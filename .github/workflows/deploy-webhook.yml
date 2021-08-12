@@ -37,3 +37,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.config.outputs.branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+
+      - name: Select Pulumi stack
+        run: |
+          stack=$(node scripts/get-stack-name.js)
+          echo "Pulumi stack: ${stack}"
+        working-directory: infrastructure
