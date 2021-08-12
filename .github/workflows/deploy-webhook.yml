@@ -1,6 +1,7 @@
 name: Deploy
 
 on:
+  push:
   repository_dispatch:
     types:
       - deploy
@@ -13,9 +14,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: GitHub Event
-        run: cat $GITHUB_EVENT_PATH
-
       - name: Configure
         id: config
         run: |
