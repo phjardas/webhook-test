@@ -17,24 +17,31 @@ jobs:
       - name: Configure
         id: config
         run: |
-          STAGE="${{ github.event.client_payload.stage }}"
+          if [ "${{ github.event.action }}" == "deploy" ]; then
+            # Determine the branch name from the dispatch event.
+            STAGE="${{ github.event.client_payload.stage }}"
 
-          if [ "$STAGE" == "prod" ]; then
-            BRANCH=refs/heads/main
-          elif [ "$STAGE" == "next" ]; then
-            BRANCH=refs/heads/next
+            if [ "$STAGE" == "prod" ]; then
+              REF="refs/heads/main"
+            elif [ "$STAGE" == "next" ]; then
+              REF="refs/heads/next"
+            else
+              echo "Unknown stage: $STAGE"
+              exit 1
+            fi
           else
-            echo "Unknown stage: $STAGE"
-            exit 1
+            # This build was not triggered by a dispatch event but a push
+            # or PR, so we simply continue with the current ref.
+            REF="${{ github.ref }}"
           fi
 
-          echo "branch: $BRANCH"
-          echo "::set-output name=branch::${BRANCH}"
+          echo "Git ref: $REF"
+          echo "::set-output name=ref::${REF}"
 
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ steps.config.outputs.branch }}
+          ref: ${{ steps.config.outputs.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
