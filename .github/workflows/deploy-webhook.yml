@@ -4,20 +4,36 @@ on:
   repository_dispatch:
     types:
       - deploy
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'The branch to deploy, must be either `main` or `next`.'
-        required: true
-        default: 'main'
 
 concurrency:
-  group: deploy
+  group: deploy-${{ github.event.client_payload.stage }}
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: GitHub event
-        run: cat $GITHUB_EVENT_PATH
+      - name: Configure
+        id: config
+        run: |
+          cat $GITHUB_EVENT_PATH
+          
+          STAGE="${{ github.event.client_payload.stage }}"
+          echo "stage: $STAGE"
+
+          if [ "$STAGE" == "prod" ]; then
+            BRANCH=refs/heads/main
+          elif [ "$STAGE" == "next" ]; then
+            BRANCH=refs/heads/main
+          else
+            echo >&2 "Unknown stage: $STAGE"
+            exit 1
+          fi
+
+          echo "branch: $BRANCH"
+          echo "::set-output name=branch::${BRANCH}"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.config.outputs.branch }}
