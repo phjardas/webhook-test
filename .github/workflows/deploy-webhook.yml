@@ -1,6 +1,9 @@
 name: Deploy
 
 on:
+  repository_dispatch:
+    types:
+      - deploy
   workflow_dispatch:
     inputs:
       branch:
