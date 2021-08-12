@@ -13,20 +13,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: GitHub Event
+        run: cat $GITHUB_EVENT_PATH
+
       - name: Configure
         id: config
         run: |
-          cat $GITHUB_EVENT_PATH
-          
           STAGE="${{ github.event.client_payload.stage }}"
-          echo "stage: $STAGE"
 
           if [ "$STAGE" == "prod" ]; then
             BRANCH=refs/heads/main
           elif [ "$STAGE" == "next" ]; then
-            BRANCH=refs/heads/main
+            BRANCH=refs/heads/next
           else
-            echo >&2 "Unknown stage: $STAGE"
+            echo "Unknown stage: $STAGE"
             exit 1
           fi
 
